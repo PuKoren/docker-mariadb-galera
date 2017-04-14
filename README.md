@@ -15,7 +15,7 @@ The container is ready to use with Docker Cloud.
 mariadb-production:
   environment:
     - MYSQL_ROOT_PASSWORD=password
-  image: 'dialonce/mariadb-galera:latest'
+  image: 'pukoren/mariadb-galera:latest'
   ports:
     - '3306:3306'
   volumes:
@@ -25,9 +25,9 @@ Then it should automatically grow as you scale it up.
 
 ## Manual (to try it locally)
 ```sh
-docker build -t dialonce/mariadb-galera:latest .
-docker run -it -e MYSQL_ROOT_PASSWORD=root --name=mariadb-1 -e HOSTNAME=mariadb-1 --rm -p 3306:3306 dialonce/mariadb-galera:latest
-docker run -it -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name=mariadb-2 -e HOSTNAME=mariadb-2 --rm --link mariadb-1:mariadb-1 dialonce/mariadb-galera:latest
+docker network create --driver bridge galera
+docker run -it -e MYSQL_ROOT_PASSWORD=root --name=mariadb-1 -e HOSTNAME=mariadb-1 --rm --network galera -p 3306:3306 pukoren/mariadb-galera:latest
+docker run -it -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name=mariadb-2 -e HOSTNAME=mariadb-2 --rm --network galera --link mariadb-1:mariadb-1 pukoren/mariadb-galera:latest
 ```
 
 # Env vars
@@ -52,7 +52,7 @@ Never shut down the whole cluster - if you do so the nodes may not be able to re
 Always set up a rolling deployment process to avoid any clustering shutdown in case of an update.
 
 # Setup examples
-## Behind a reverse proxy (HAProxy), secured by IP filtering
+## Behind a reverse proxy (HAProxy), secured by IP filtering (Docker Cloud)
 Creating a MariaDB Galera cluster behind a reverse proxy, that will load balancer and filter incoming requests based on source IP address:
 ```yml
 mariadb-production:
@@ -61,7 +61,7 @@ mariadb-production:
     - 'EXTRA_SETTINGS=acl network_allowed src 192.168.1.0,block if !network_allowed'
     - MYSQL_ROOT_PASSWORD=password
     - TCP_PORTS=3306
-  image: 'dialonce/mariadb-galera:latest'
+  image: 'pukoren/mariadb-galera:latest'
   sequential_deployment: true
   volumes:
     - '/data/mysql:/data'

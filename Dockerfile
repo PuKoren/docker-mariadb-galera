@@ -1,6 +1,6 @@
 FROM mariadb:10.1
 
-MAINTAINER jmuller@dial-once.com
+MAINTAINER koren@pukogames.com
 
 ENV DOCKERIZE_VERSION="0.2.0" \
   GALERA_SLAVE_THREADS=1 \
