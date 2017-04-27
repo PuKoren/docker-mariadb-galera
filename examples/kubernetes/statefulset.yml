@@ -1,0 +1,48 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: mariadb
+spec:
+  serviceName: "mariadb"
+  # use at least 3 for HA deployments
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: mariadb
+        imagePullPolicy: Always
+        # don't use latest on production deployments
+        image: pukoren/mariadb-galera:latest
+        ports:
+        - containerPort: 3306
+          name: mariadb
+        volumeMounts:
+        - name: mariadb-data
+          mountPath: /var/lib/mysql
+        env:
+        # root password for the cluster
+        - name: MYSQL_ROOT_PASSWORD
+          value: 'password'
+        # default database
+        - name: MYSQL_DATABASE
+          value: 'db1'
+
+        # always redeploy one at a time
+        readinessProbe:
+          failureThreshold: 5
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: mariadb-data
+        emptyDir: {}

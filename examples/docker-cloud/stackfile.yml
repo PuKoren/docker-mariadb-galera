@@ -1,0 +1,15 @@
+mariadb-production:
+  # don't use :latest on production deployments
+  image: 'pukoren/mariadb-galera:latest'
+  environment:
+    - MYSQL_ROOT_PASSWORD=password
+    - MYSQL_DATABASE=db1
+  # use at least 3 containers for HA deployments
+  target_num_containers: 3
+  deployment_strategy: high_availability
+  # if you want to expose ports to the internet
+  ports:
+    - '3306:3306'
+  # if you want to persist data on host machine
+  volumes:
+    - '/data/mysql:/data'

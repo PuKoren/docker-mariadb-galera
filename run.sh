@@ -4,14 +4,23 @@ cat /etc/mysql/conf.d/mysql_server.cnf
 DATADIR=/data
 set -- mysqld "$@"
 
-if [ -z $HOSTNAME ]; then
+if [ -v $DOCKERCLOUD_CONTAINER_HOSTNAME ]; then
   HOSTNAME=$DOCKERCLOUD_CONTAINER_HOSTNAME
+fi
+
+MASTER_FIRST='-1'
+if [ -v $KUBERNETES_SERVICE_HOST ]; then
+  MASTER_FIRST='-0'
+fi
+
+if [ -z $HOSTNAME ]; then
+  HOSTNAME=mariadb-1
 fi
 
 LIMIT=$(echo $HOSTNAME | sed 's/[^0-9]*//g')
 
 MASTER=0
-if [ "${HOSTNAME:(-2)}" = '-1' ]; then
+if [ "${HOSTNAME:(-2)}" = $MASTER_FIRST ]; then
   echo "[MASTER]"
   MASTER=1
 fi

@@ -1,29 +1,21 @@
 # mariadb-galera
-Clusterable, auto-discoverable MariaDB galera cluster - made for Docker Cloud
+Clusterable, auto-discoverable MariaDB galera cluster.
 
 Built with [the useful topic from Withblue.ink](http://withblue.ink/2016/03/09/galera-cluster-mariadb-coreos-and-docker-part-1.html).
 
 # Project description
 Goal of this project is to create an easily deployable MariaDB cluster, that can scale up and down without configuration/setup assle.
-It uses `HOSTNAME` (or `DOCKERCLOUD_CONTAINER_HOSTNAME` on Docker Cloud) env vars to discover other hosts (mariadb-1, mariadb-2, mariadb-3, etc.). Container named with `{name}-1` will be the galera cluster creator.
+It uses `HOSTNAME` (or `DOCKERCLOUD_CONTAINER_HOSTNAME` on Docker Cloud) env vars to discover other hosts (mariadb-1, mariadb-2, mariadb-3, etc.). Container named with `{name}-1` (`{name-0}` when on Kubernetes) will be the galera cluster creator.
 
-The container is ready to use with Docker Cloud.
+The container is ready to use with Docker Cloud, Docker Compose and simple Docker commands. Support for Kubernetes is in beta.
 
 # Build and run
-## Docker Cloud/Docker Compose YML
-```yml
-mariadb-production:
-  environment:
-    - MYSQL_ROOT_PASSWORD=password
-  image: 'pukoren/mariadb-galera:latest'
-  ports:
-    - '3306:3306'
-  volumes:
-    - '/data/mysql:/data'
-```
-Then it should automatically grow as you scale it up.
 
-## Manual (to try it locally)
+  - [Docker Cloud](/examples/docker-cloud)
+  - [Docker Compose](/examples/docker-compose)
+  - [Kubernetes](/examples/kubernetes)
+
+## Manual (to try it locally - manual deployments with Docker)
 ```sh
 docker network create --driver bridge galera
 docker run -it -e MYSQL_ROOT_PASSWORD=root --name=mariadb-1 -e HOSTNAME=mariadb-1 --rm --network galera -p 3306:3306 pukoren/mariadb-galera:latest
@@ -47,9 +39,9 @@ docker run -it -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name=mariadb-2 -e HOSTNAME=m
 # Things to know
 ## Cluster shut down and clustering recovery
 
-Never shut down the whole cluster - if you do so the nodes may not be able to recover. If for some reason you need to shut down the whole cluster and restart it later, make sure to delete the file named `clustered` located in shared volume of the first container (`{name}-1`).
+Never shut down the whole cluster - if you do so the nodes may not be able to recover. If for some reason you need to shut down the whole cluster and restart it later, make sure to delete the file named `clustered` located in shared volume of the first container (`{name}-1` or `{name}-0` in Kubernetes).
 
-Always set up a rolling deployment process to avoid any clustering shutdown in case of an update.
+Always set up a rolling deployment process to avoid any clustering shutdown when updating.
 
 # Setup examples
 ## Behind a reverse proxy (HAProxy), secured by IP filtering (Docker Cloud)

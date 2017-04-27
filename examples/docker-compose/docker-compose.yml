@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  mariadb-production:
+    # don't use :latest tag on production deployments
+    image: 'pukoren/mariadb-galera:latest'
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=db1
+    deploy:
+      # always use at least 3 containers for HA deployments
+      replicas: 3
+      update_config:
+        # there should always be at least 1 container UP until another one rejoin the cluster
+        # otherwise you will have downtimes
+        parallelism: 2
+        delay: 30s
+    networks:
+      - galera
+    ports:
+      - '3306:3306'
+    # if you want to persist data on host machine
+    volumes:
+      - '/data/mysql:/data'
+
+networks:
+  galera:
